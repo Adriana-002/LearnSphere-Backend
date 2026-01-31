@@ -1,11 +1,19 @@
 package com.spring.learnsphere.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "tutor_alumno")
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
+
 public class TutorAlumno {
     @EmbeddedId
     private TutorAlumnoId id;
@@ -24,37 +32,5 @@ public class TutorAlumno {
 
     @Column(name = "parentesco", length = 50)
     private String parentesco;
-
-    public TutorAlumnoId getId() {
-        return id;
-    }
-
-    public void setId(TutorAlumnoId id) {
-        this.id = id;
-    }
-
-    public TutorLegal getTutor() {
-        return tutor;
-    }
-
-    public void setTutor(TutorLegal tutor) {
-        this.tutor = tutor;
-    }
-
-    public Alumno getAlumno() {
-        return alumno;
-    }
-
-    public void setAlumno(Alumno alumno) {
-        this.alumno = alumno;
-    }
-
-    public String getParentesco() {
-        return parentesco;
-    }
-
-    public void setParentesco(String parentesco) {
-        this.parentesco = parentesco;
-    }
 
 }

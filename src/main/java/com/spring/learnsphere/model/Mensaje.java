@@ -1,6 +1,7 @@
 package com.spring.learnsphere.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -9,6 +10,13 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "mensajes")
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
+
 public class Mensaje {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,45 +39,5 @@ public class Mensaje {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "fecha_envio")
     private Instant fechaEnvio;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Chat getChat() {
-        return chat;
-    }
-
-    public void setChat(Chat chat) {
-        this.chat = chat;
-    }
-
-    public Usuario getUser() {
-        return user;
-    }
-
-    public void setUser(Usuario user) {
-        this.user = user;
-    }
-
-    public String getTexto() {
-        return texto;
-    }
-
-    public void setTexto(String texto) {
-        this.texto = texto;
-    }
-
-    public Instant getFechaEnvio() {
-        return fechaEnvio;
-    }
-
-    public void setFechaEnvio(Instant fechaEnvio) {
-        this.fechaEnvio = fechaEnvio;
-    }
 
 }

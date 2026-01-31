@@ -11,6 +11,13 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "notificaciones")
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
+
 public class Notificacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,66 +49,5 @@ public class Notificacion {
     @Column(name = "fecha")
     private Instant fecha;
 
-    public Integer getId() {
-        return id;
-    }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Usuario getUser() {
-        return user;
-    }
-
-    public void setUser(Usuario user) {
-        this.user = user;
-    }
-
-    public String getMensaje() {
-        return mensaje;
-    }
-
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
-    }
-
-    public Integer getEntidadId() {
-        return entidadId;
-    }
-
-    public void setEntidadId(Integer entidadId) {
-        this.entidadId = entidadId;
-    }
-
-    public String getEntidadTipo() {
-        return entidadTipo;
-    }
-
-    public void setEntidadTipo(String entidadTipo) {
-        this.entidadTipo = entidadTipo;
-    }
-
-    public Boolean getLeida() {
-        return leida;
-    }
-
-    public void setLeida(Boolean leida) {
-        this.leida = leida;
-    }
-
-    public Instant getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(Instant fecha) {
-        this.fecha = fecha;
-    }
-
-/*
- TODO [Reverse Engineering] create field to map the 'tipo' column
- Available actions: Define target Java type | Uncomment as is | Remove column mapping
-    @Column(name = "tipo", columnDefinition = "tipo_notificacion not null")
-    private Object tipo;
-*/
 }

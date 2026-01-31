@@ -1,9 +1,17 @@
 package com.spring.learnsphere.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 @Entity
 @Table(name = "cursos")
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
+
 public class Curso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,29 +23,5 @@ public class Curso {
 
     @Column(name = "\"año_academico\"", nullable = false, length = 9)
     private String añoAcademico;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getAñoAcademico() {
-        return añoAcademico;
-    }
-
-    public void setAñoAcademico(String añoAcademico) {
-        this.añoAcademico = añoAcademico;
-    }
 
 }

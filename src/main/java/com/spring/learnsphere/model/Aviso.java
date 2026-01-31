@@ -1,12 +1,20 @@
 package com.spring.learnsphere.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "avisos")
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode
+
 public class Aviso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,45 +34,5 @@ public class Aviso {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "fecha_publicacion")
     private Instant fechaPublicacion;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
-    public String getMensaje() {
-        return mensaje;
-    }
-
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
-    }
-
-    public Boolean getEsImportante() {
-        return esImportante;
-    }
-
-    public void setEsImportante(Boolean esImportante) {
-        this.esImportante = esImportante;
-    }
-
-    public Instant getFechaPublicacion() {
-        return fechaPublicacion;
-    }
-
-    public void setFechaPublicacion(Instant fechaPublicacion) {
-        this.fechaPublicacion = fechaPublicacion;
-    }
 
 }
