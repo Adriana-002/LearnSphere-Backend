@@ -1,6 +1,8 @@
 package com.spring.learnsphere.model;
 
+import com.spring.learnsphere.enums.TipoNotificacion;
 import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -19,6 +21,10 @@ public class Notificacion {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id", nullable = false)
     private Usuario user;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo", nullable = false)
+    private TipoNotificacion tipo;
 
     @Column(name = "mensaje", nullable = false, length = 200)
     private String mensaje;
