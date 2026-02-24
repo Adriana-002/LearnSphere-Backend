@@ -17,4 +17,32 @@ public class AlumnoService {
     public List<Alumno> getAllAlumnos() {
         return alumnoRepository.findAll();
     }
+
+    public Alumno findAlumnoById(Integer id) {
+        return alumnoRepository.findById(id).orElseThrow(() -> new RuntimeException("Alumno no encontrado"));
+    }
+
+    public Alumno createAlumno(Alumno alumno) {
+        return alumnoRepository.save(alumno);
+    }
+
+    public Alumno updateAlumno(Integer id, Alumno alumnoDetails) {
+        Alumno alumno = findAlumnoById(id);
+
+        if (alumno == null) {
+            throw new IllegalArgumentException("Alumno no encontrado");
+        }
+        alumno.setNombre(alumnoDetails.getNombre());
+        alumno.setApellidos(alumnoDetails.getApellidos());
+        alumno.setFechaNacimiento(alumnoDetails.getFechaNacimiento());
+        alumno.setFotoUrl(alumnoDetails.getFotoUrl());
+        return createAlumno(alumno);
+    }
+
+    public void deleteAlumno(Integer id) {
+        if (findAlumnoById(id) == null) {
+            throw new IllegalArgumentException("Alumno no encontrado");
+        }
+        alumnoRepository.deleteById(id);
+    }
 }
