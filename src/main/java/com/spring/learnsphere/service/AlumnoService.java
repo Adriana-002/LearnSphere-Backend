@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class AlumnoService {
-    @Autowired
+
     private final AlumnoRepository alumnoRepository;
 
     public List<Alumno> getAllAlumnos() {
@@ -45,4 +45,5 @@ public class AlumnoService {
         }
         alumnoRepository.deleteById(id);
     }
+
 }

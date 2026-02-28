@@ -12,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/alumnos")
 public class AlumnoController {
-    @Autowired
+
     private final AlumnoService alumnoService;
 
     @GetMapping("/listar")
@@ -39,4 +39,5 @@ public class AlumnoController {
     public void eliminarAlumno(@PathVariable Integer id) {
         alumnoService.deleteAlumno(id);
     }
+
 }
