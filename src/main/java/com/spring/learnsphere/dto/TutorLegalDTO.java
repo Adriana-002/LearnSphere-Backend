@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class TutorLegalDTO {
-    private Long userId;
+    private Integer userId;
+    private String nombre;
+    private String apellidos;
+    private String email;
+    private String telefono;
     private Boolean esAlumno;
 }

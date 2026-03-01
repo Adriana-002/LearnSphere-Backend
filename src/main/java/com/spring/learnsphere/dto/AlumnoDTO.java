@@ -1,17 +1,22 @@
 package com.spring.learnsphere.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.LocalDate;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class AlumnoDTO {
-    private Long alumnoId;
+    @JsonProperty("alumno_id")
+    private Integer alumnoId;
+    @JsonProperty("nombre")
     private String nombre;
+    @JsonProperty("apellidos")
     private String apellidos;
-    private LocalDate fechaNacimiento;
+    private String fechaNacimiento;
     private String fotoUrl;
+    @JsonProperty("cursoId")
+    private Integer cursoId;
 }

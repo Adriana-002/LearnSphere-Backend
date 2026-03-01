@@ -1,6 +1,6 @@
 package com.spring.learnsphere.controller;
 
-import com.spring.learnsphere.model.TutorLegal;
+import com.spring.learnsphere.dto.TutorLegalDTO;
 import com.spring.learnsphere.service.TutorLegalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,28 +15,18 @@ public class TutorLegalController {
     private final TutorLegalService tutorLegalService;
 
     @GetMapping("/listar")
-    public List<TutorLegal> listarTutoresLegales() {
-        return tutorLegalService.findAllTutoresLegales();
+    public List<TutorLegalDTO> listar() {
+        return tutorLegalService.getAll();
     }
 
     @GetMapping("/buscar/{id}")
-    public TutorLegal buscarTutorLegalPorId(@PathVariable Integer id) {
-        return tutorLegalService.findTutorLegalById(id);
-    }
-
-    @PostMapping("/crear")
-    public TutorLegal crearTutorLegal(@RequestBody TutorLegal tutorLegal) {
-        return tutorLegalService.createTutorLegal(tutorLegal);
+    public TutorLegalDTO buscarPorId(@PathVariable Integer id) {
+        return tutorLegalService.findById(id);
     }
 
     @PutMapping("/editar/{id}")
-    public TutorLegal editarTutorLegal(@PathVariable Integer id, @RequestBody TutorLegal tutorLegal) {
-        return tutorLegalService.updateTutorLegal(id, tutorLegal);
-    }
-
-    @DeleteMapping("/eliminar/{id}")
-    public void eliminarTutorLegal(@PathVariable Integer id) {
-        tutorLegalService.deleteTutorLegal(id);
+    public TutorLegalDTO editar(@PathVariable Integer id, @RequestBody TutorLegalDTO dto) {
+        return tutorLegalService.update(id, dto);
     }
 
 }

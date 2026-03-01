@@ -1,9 +1,8 @@
 package com.spring.learnsphere.controller;
 
-import com.spring.learnsphere.model.Alumno;
+import com.spring.learnsphere.dto.AlumnoDTO;
 import com.spring.learnsphere.service.AlumnoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,23 +15,38 @@ public class AlumnoController {
     private final AlumnoService alumnoService;
 
     @GetMapping("/listar")
-    public List<Alumno> listarAlumnos() {
+    public List<AlumnoDTO> listarAlumnos() {
         return alumnoService.getAllAlumnos();
     }
 
     @GetMapping("/buscar/{id}")
-    public Alumno buscarAlumnoPorId(@PathVariable Integer id) {
+    public AlumnoDTO buscarAlumnoPorId(@PathVariable Integer id) {
         return alumnoService.findAlumnoById(id);
     }
 
+    @GetMapping("/tutor/{tutorId}")
+    public AlumnoDTO getByTutor(@PathVariable Integer tutorId) {
+        return alumnoService.getByTutor(tutorId);
+    }
+
+    @GetMapping("/profesor/{profesorId}")
+    public List<AlumnoDTO> getByProfesor(@PathVariable Integer profesorId) {
+        return alumnoService.getByProfesor(profesorId);
+    }
+
+    @GetMapping("/curso/{cursoId}")
+    public List<AlumnoDTO> getByCurso(@PathVariable Integer cursoId) {
+        return alumnoService.getByCurso(cursoId);
+    }
+
     @PostMapping("/crear")
-    public Alumno crearAlumno(@RequestBody Alumno alumno) {
-        return alumnoService.createAlumno(alumno);
+    public AlumnoDTO crearAlumno(@RequestBody AlumnoDTO dto) {
+        return alumnoService.createAlumno(dto);
     }
 
     @PutMapping("/editar/{id}")
-    public Alumno editarAlumno(@PathVariable Integer id, @RequestBody Alumno alumno) {
-        return alumnoService.updateAlumno(id, alumno);
+    public AlumnoDTO editarAlumno(@PathVariable Integer id, @RequestBody AlumnoDTO dto) {
+        return alumnoService.updateAlumno(id, dto);
     }
 
     @DeleteMapping("/eliminar/{id}")

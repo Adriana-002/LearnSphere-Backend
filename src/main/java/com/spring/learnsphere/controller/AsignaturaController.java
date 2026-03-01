@@ -1,6 +1,6 @@
 package com.spring.learnsphere.controller;
 
-import com.spring.learnsphere.model.Asignatura;
+import com.spring.learnsphere.dto.AsignaturaDTO;
 import com.spring.learnsphere.service.AsignaturaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,29 +14,23 @@ public class AsignaturaController {
 
     private final AsignaturaService asignaturaService;
 
-    @GetMapping("/listar")
-    public List<Asignatura> listarAsignaturas() {
-        return asignaturaService.getAllAsignaturas();
+    @GetMapping("/curso/{cursoId}")
+    public List<AsignaturaDTO> getByCurso(@PathVariable Integer cursoId) {
+        return asignaturaService.getByCurso(cursoId);
     }
 
-    @GetMapping("/buscar/{id}")
-    public Asignatura buscarAsignaturaPorId(@PathVariable Integer id) {
-        return asignaturaService.findAsignaturaById(id);
+    @GetMapping("/profesor/{profesorId}")
+    public List<AsignaturaDTO> getByProfesor(@PathVariable Integer profesorId) {
+        return asignaturaService.getByProfesor(profesorId);
     }
 
     @PostMapping("/crear")
-    public Asignatura crearAsignatura(@RequestBody Asignatura alumno) {
-        return asignaturaService.createAsignatura(alumno);
+    public AsignaturaDTO createAsignatura(@RequestBody AsignaturaDTO dto) {
+        return asignaturaService.createAsignatura(dto);
     }
 
     @PutMapping("/editar/{id}")
-    public Asignatura editarAsignatura(@PathVariable Integer id, @RequestBody Asignatura alumno) {
-        return asignaturaService.updateAsignatura(id, alumno);
+    public AsignaturaDTO updateAsignatura(@PathVariable Integer id, @RequestBody AsignaturaDTO dto) {
+        return asignaturaService.updateAsignatura(id, dto);
     }
-
-    @DeleteMapping("/eliminar/{id}")
-    public void eliminarAsignatura(@PathVariable Integer id) {
-        asignaturaService.deleteAsignatura(id);
-    }
-
 }

@@ -21,4 +21,10 @@ public class MaterialEscolar {
     @Column(name = "nombre", nullable = false, length = 200)
     private String nombre;
 
+    @Column(name = "editorial", length = 200)
+    private String editorial;
+
+    @Column(name = "isbn", length = 20)
+    private String isbn;
+
 }

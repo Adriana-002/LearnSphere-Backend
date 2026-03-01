@@ -1,11 +1,11 @@
 package com.spring.learnsphere.controller;
 
-import com.spring.learnsphere.model.Usuario;
+import com.spring.learnsphere.dto.UsuarioDTO;
 import com.spring.learnsphere.service.UsuarioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -14,29 +14,26 @@ public class UsuarioController {
 
     private final UsuarioService usuarioService;
 
-    @GetMapping("/listar")
-    public List<Usuario> listarUsuarios() {
-        return usuarioService.findAllUsuarios();
-    }
-
     @GetMapping("/buscar/{id}")
-    public Usuario buscarUsuarioPorId(@PathVariable Integer id) {
-        return usuarioService.findUsuarioById(id);
-    }
-
-    @PostMapping("/crear")
-    public Usuario crearUsuario(@RequestBody Usuario usuario) {
-        return usuarioService.createUsuario(usuario);
+    public UsuarioDTO buscarPorId(@PathVariable Integer id) {
+        return usuarioService.findById(id);
     }
 
     @PutMapping("/editar/{id}")
-    public Usuario editarUsuario(@PathVariable Integer id, @RequestBody Usuario usuario) {
-        return usuarioService.updateUsuario(id, usuario);
+    public UsuarioDTO editar(@PathVariable Integer id, @RequestBody UsuarioDTO dto) {
+        return usuarioService.update(id, dto);
     }
 
-    @DeleteMapping("/eliminar/{id}")
-    public void eliminarUsuario(@PathVariable Integer id) {
-        usuarioService.deleteUsuario(id);
+    @GetMapping("/me")
+    public ResponseEntity<UsuarioDTO> me(@RequestHeader(value = "X-User-Id", required = false) Integer userId) {
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        UsuarioDTO dto = usuarioService.findById(userId);
+        if (dto == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(dto);
     }
 
 }

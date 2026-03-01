@@ -1,6 +1,6 @@
 package com.spring.learnsphere.controller;
 
-import com.spring.learnsphere.model.Mensaje;
+import com.spring.learnsphere.dto.MensajeDTO;
 import com.spring.learnsphere.service.MensajeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,28 +14,18 @@ public class MensajeController {
 
     private final MensajeService mensajeService;
 
-    @GetMapping("/listar")
-    public List<Mensaje> listarMensajes() {
-        return mensajeService.findAllMensajes();
-    }
-
-    @GetMapping("/buscar/{id}")
-    public Mensaje buscarMensajePorId(@PathVariable Integer id) {
-        return mensajeService.findMensajeById(id);
+    @GetMapping("/chat/{chatId}")
+    public List<MensajeDTO> getByChatId(@PathVariable Integer chatId) {
+        return mensajeService.getByChatId(chatId);
     }
 
     @PostMapping("/crear")
-    public Mensaje crearMensaje(@RequestBody Mensaje mensaje) {
-        return mensajeService.createMensaje(mensaje);
-    }
-
-    @PutMapping("/editar/{id}")
-    public Mensaje editarMensaje(@PathVariable Integer id, @RequestBody Mensaje mensaje) {
-        return mensajeService.updateMensaje(id, mensaje);
+    public MensajeDTO createMensaje(@RequestBody MensajeDTO dto) {
+        return mensajeService.createMensaje(dto);
     }
 
     @DeleteMapping("/eliminar/{id}")
-    public void eliminarMensaje(@PathVariable Integer id) {
+    public void deleteMensaje(@PathVariable Integer id) {
         mensajeService.deleteMensaje(id);
     }
 

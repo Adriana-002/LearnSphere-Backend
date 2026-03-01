@@ -6,7 +6,7 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "mensajes")
@@ -38,6 +38,6 @@ public class Mensaje {
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "fecha_envio")
-    private Instant fechaEnvio;
+    private LocalDateTime fechaEnvio;
 
 }

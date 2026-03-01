@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class CursoDTO {
-    private Long cursoId;
+    private Integer cursoId;
     private String nombre;
     private String añoAcademico;
 }

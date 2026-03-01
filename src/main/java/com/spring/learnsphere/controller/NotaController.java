@@ -1,6 +1,6 @@
 package com.spring.learnsphere.controller;
 
-import com.spring.learnsphere.model.Nota;
+import com.spring.learnsphere.dto.NotaDTO;
 import com.spring.learnsphere.service.NotaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -14,29 +14,24 @@ public class NotaController {
 
     private final NotaService notaService;
 
-    @GetMapping("/listar")
-    public List<Nota> listarNotas() {
-        return notaService.findAllNotas();
+    @GetMapping("/alumno/{alumnoId}/trimestre/{trimestre}")
+    public List<NotaDTO> getByAlumnoYTrimestre(@PathVariable Integer alumnoId, @PathVariable Integer trimestre) {
+        return notaService.getByAlumnoYTrimestre(alumnoId, trimestre);
     }
 
-    @GetMapping("/buscar/{id}")
-    public Nota buscarNotaPorId(@PathVariable Integer id) {
-        return notaService.findNotaById(id);
+    @GetMapping("/alumno/{alumnoId}")
+    public List<NotaDTO> getByAlumno(@PathVariable Integer alumnoId) {
+        return notaService.getByAlumno(alumnoId);
     }
 
     @PostMapping("/crear")
-    public Nota crearNota(@RequestBody Nota nota) {
-        return notaService.createNota(nota);
+    public NotaDTO createNota(@RequestBody NotaDTO dto) {
+        return notaService.createNota(dto);
     }
 
     @PutMapping("/editar/{id}")
-    public Nota editarNota(@PathVariable Integer id, @RequestBody Nota nota) {
-        return notaService.updateNota(id, nota);
-    }
-
-    @DeleteMapping("/eliminar/{id}")
-    public void eliminarNota(@PathVariable Integer id) {
-        notaService.deleteNota(id);
+    public NotaDTO updateNota(@PathVariable Integer id, @RequestBody NotaDTO dto) {
+        return notaService.updateNota(id, dto);
     }
 
 }

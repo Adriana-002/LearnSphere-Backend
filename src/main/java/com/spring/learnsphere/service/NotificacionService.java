@@ -1,11 +1,13 @@
 package com.spring.learnsphere.service;
 
+import com.spring.learnsphere.dto.NotificacionDTO;
 import com.spring.learnsphere.model.Notificacion;
 import com.spring.learnsphere.repository.NotificacionRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -13,39 +15,27 @@ public class NotificacionService {
 
     private final NotificacionRepository notificacionRepository;
 
-    public List<Notificacion> findAllNotificaciones() {
-        return notificacionRepository.findAll();
+    public List<NotificacionDTO> getByUsuario(Integer userId) {
+        return notificacionRepository.findByUser_IdOrderByFechaDesc(userId)
+                .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public Notificacion findNotificacionById(Integer id) {
-        return notificacionRepository.findById(id).orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
+    public void marcarLeida(Integer id) {
+        Notificacion n = notificacionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
+        n.setLeida(true);
+        notificacionRepository.save(n);
     }
 
-    public Notificacion createNotificacion(Notificacion notificacion) {
-        return notificacionRepository.save(notificacion);
-    }
-
-    public Notificacion updateNotificacion(Integer id, Notificacion notificacionDetails) {
-        Notificacion notificacion = findNotificacionById(id);
-
-        if (notificacion == null) {
-            throw new IllegalArgumentException("Notificación no encontrada");
-        }
-        notificacion.setUser(notificacionDetails.getUser());
-        notificacion.setTipo(notificacionDetails.getTipo());
-        notificacion.setMensaje(notificacionDetails.getMensaje());
-        notificacion.setEntidadId(notificacionDetails.getEntidadId());
-        notificacion.setEntidadTipo(notificacionDetails.getEntidadTipo());
-        notificacion.setLeida(notificacionDetails.getLeida());
-        notificacion.setFecha(notificacionDetails.getFecha());
-        return createNotificacion(notificacion);
-    }
-
-    public void deleteNotificacion(Integer id) {
-        if (findNotificacionById(id) == null) {
-            throw new IllegalArgumentException("Notificación no encontrada");
-        }
-        notificacionRepository.deleteById(id);
+    private NotificacionDTO toDTO(Notificacion n) {
+        NotificacionDTO dto = new NotificacionDTO();
+        dto.setNotificacionId(n.getId());
+        dto.setUserId(n.getUser().getId());
+        dto.setTipo(n.getTipo().name());
+        dto.setMensaje(n.getMensaje());
+        dto.setLeida(n.getLeida());
+        dto.setFecha(n.getFecha() != null ? n.getFecha().toString() : null);
+        return dto;
     }
 
 }

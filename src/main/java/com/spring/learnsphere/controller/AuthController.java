@@ -21,21 +21,18 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthLoginRequest request) {
 
-        // 1. Buscar usuario por email
         Usuario usuario = usuarioRepository.findByEmail(request.getEmail());
 
         if (usuario == null) {
             return ResponseEntity.status(401).body("Credenciales incorrectas");
         }
 
-        // 2. Comparar contraseña con el hash guardado en BD
         if (!encoder.matches(request.getPassword(), usuario.getPasswordHash())) {
             return ResponseEntity.status(401).body("Credenciales incorrectas");
         }
 
-        // 3. Devolver los datos que necesita Android
         AuthLoginResponse response = new AuthLoginResponse(
-                "token-" + usuario.getId(),  // token temporal, luego será JWT
+                "token-" + usuario.getId(),
                 usuario.getId(),
                 usuario.getNombre(),
                 usuario.getRol()

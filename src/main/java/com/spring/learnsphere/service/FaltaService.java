@@ -1,47 +1,48 @@
 package com.spring.learnsphere.service;
 
+import com.spring.learnsphere.dto.FaltaDTO;
 import com.spring.learnsphere.model.Falta;
+import com.spring.learnsphere.repository.AlumnoRepository;
 import com.spring.learnsphere.repository.FaltaRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class FaltaService {
 
     private final FaltaRepository faltaRepository;
+    private final AlumnoRepository alumnoRepository;
 
-    public List<Falta> findAllFaltas() {
-        return faltaRepository.findAll();
+    public List<FaltaDTO> getByAlumno(Integer alumnoId) {
+        return faltaRepository.findByAlumnoId(alumnoId)
+                .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public Falta findFaltaById(Integer id) {
-        return faltaRepository.findById(id).orElseThrow(() -> new RuntimeException("Falta no encontrada"));
-    }
-
-    public Falta createFalta(Falta falta) {
-        return faltaRepository.save(falta);
-    }
-
-    public Falta updateFalta(Integer id, Falta faltaDetails) {
-        Falta falta = findFaltaById(id);
-
-        if (falta == null) {
-            throw new IllegalArgumentException("Falta no encontrada");
-        }
-        falta.setAlumno(faltaDetails.getAlumno());
-        falta.setFecha(faltaDetails.getFecha());
-        falta.setHora(faltaDetails.getHora());
-        return createFalta(falta);
+    public FaltaDTO createFalta(FaltaDTO dto) {
+        Falta falta = new Falta();
+        alumnoRepository.findById(dto.getAlumnoId()).ifPresent(falta::setAlumno);
+        falta.setFecha(LocalDate.parse(dto.getFecha()));
+        falta.setHora(dto.getHora() != null ? LocalTime.parse(dto.getHora()) : null);
+        return toDTO(faltaRepository.save(falta));
     }
 
     public void deleteFalta(Integer id) {
-        if (findFaltaById(id) == null) {
-            throw new IllegalArgumentException("Falta no encontrada");
-        }
         faltaRepository.deleteById(id);
+    }
+
+    private FaltaDTO toDTO(Falta f) {
+        FaltaDTO dto = new FaltaDTO();
+        dto.setFaltaId(f.getId());
+        dto.setAlumnoId(f.getAlumno().getId());
+        dto.setFecha(f.getFecha().toString());
+        dto.setHora(f.getHora() != null ? f.getHora().toString() : null);
+        return dto;
     }
 
 }

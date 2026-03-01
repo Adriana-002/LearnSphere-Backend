@@ -1,6 +1,6 @@
 package com.spring.learnsphere.controller;
 
-import com.spring.learnsphere.model.Aviso;
+import com.spring.learnsphere.dto.AvisoDTO;
 import com.spring.learnsphere.service.AvisoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,27 +15,22 @@ public class AvisoController {
     private final AvisoService avisoService;
 
     @GetMapping("/listar")
-    public List<Aviso> listarAvisos() {
-        return avisoService.findAllAvisos();
+    public List<AvisoDTO> getAllAvisos() {
+        return avisoService.getAllAvisos();
     }
 
-    @GetMapping("/buscar/{id}")
-    public Aviso buscarAvisoPorId(@PathVariable Integer id) {
-        return avisoService.findAvisoById(id);
+    @GetMapping("/importantes")
+    public List<AvisoDTO> getImportantes() {
+        return avisoService.getImportantes();
     }
 
     @PostMapping("/crear")
-    public Aviso crearAviso(@RequestBody Aviso aviso) {
-        return avisoService.createAviso(aviso);
-    }
-
-    @PutMapping("/editar/{id}")
-    public Aviso editarAviso(@PathVariable Integer id, @RequestBody Aviso aviso) {
-        return avisoService.updateAviso(id, aviso);
+    public AvisoDTO createAviso(@RequestBody AvisoDTO dto) {
+        return avisoService.createAviso(dto);
     }
 
     @DeleteMapping("/eliminar/{id}")
-    public void eliminarAviso(@PathVariable Integer id) {
+    public void deleteAviso(@PathVariable Integer id) {
         avisoService.deleteAviso(id);
     }
 
