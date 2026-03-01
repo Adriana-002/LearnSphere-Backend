@@ -1,6 +1,7 @@
 package com.spring.learnsphere.service;
 
 import com.spring.learnsphere.dto.NotificacionDTO;
+import com.spring.learnsphere.enums.TipoNotificacion;
 import com.spring.learnsphere.model.Notificacion;
 import com.spring.learnsphere.repository.NotificacionRepository;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,16 @@ public class NotificacionService {
 
     public List<NotificacionDTO> getByUsuario(Integer userId) {
         return notificacionRepository.findByUser_IdOrderByFechaDesc(userId)
+                .stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    public List<NotificacionDTO> getImportantesByUsuario(Integer userId) {
+        List<TipoNotificacion> importantes = List.of(
+                TipoNotificacion.nueva_nota,
+                TipoNotificacion.nueva_falta,
+                TipoNotificacion.nueva_observacion
+        );
+        return notificacionRepository.findByUser_IdAndTipoInOrderByFechaDesc(userId, importantes)
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
 

@@ -30,7 +30,7 @@ public class Notificacion {
     private Usuario user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false)
+    @Column(name = "tipo", nullable = false, columnDefinition = "tipo_notificacion")
     private TipoNotificacion tipo;
 
     @Column(name = "mensaje", nullable = false, length = 200)
