@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class UsuarioChatDTO {
-    private Long userId;
-    private Long chatId;
+    private Integer userId;
+    private Integer chatId;
 }

@@ -1,11 +1,10 @@
 package com.spring.learnsphere.service;
 
+import com.spring.learnsphere.dto.UsuarioDTO;
 import com.spring.learnsphere.model.Usuario;
 import com.spring.learnsphere.repository.UsuarioRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -13,39 +12,35 @@ public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
 
-    public List<Usuario> findAllUsuarios() {
-        return usuarioRepository.findAll();
+    public UsuarioDTO findById(Integer id) {
+        Usuario u = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        return toDTO(u);
     }
 
-    public Usuario findUsuarioById(Integer id) {
-        return usuarioRepository.findById(id).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    public Usuario findByEmail(String email) {
+        return usuarioRepository.findByEmail(email);
     }
 
-    public Usuario createUsuario(Usuario usuario) {
-        return usuarioRepository.save(usuario);
+    public UsuarioDTO update(Integer id, UsuarioDTO dto) {
+        Usuario u = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        u.setNombre(dto.getNombre());
+        u.setApellidos(dto.getApellidos());
+        u.setTelefono(dto.getTelefono());
+        return toDTO(usuarioRepository.save(u));
     }
 
-    public Usuario updateUsuario(Integer id, Usuario usuarioDetails) {
-        Usuario usuario = findUsuarioById(id);
-
-        if (usuario == null) {
-            throw new IllegalArgumentException("Usuario no encontrado");
-        }
-        usuario.setEmail(usuarioDetails.getEmail());
-        usuario.setPasswordHash(usuarioDetails.getPasswordHash());
-        usuario.setNombre(usuarioDetails.getNombre());
-        usuario.setApellidos(usuarioDetails.getApellidos());
-        usuario.setTelefono(usuarioDetails.getTelefono());
-        usuario.setRol(usuarioDetails.getRol());
-        usuario.setFechaRegistro(usuarioDetails.getFechaRegistro());
-        return createUsuario(usuario);
-    }
-
-    public void deleteUsuario(Integer id) {
-        if (findUsuarioById(id) == null) {
-            throw new IllegalArgumentException("Usuario no encontrado");
-        }
-        usuarioRepository.deleteById(id);
+    private UsuarioDTO toDTO(Usuario u) {
+        UsuarioDTO dto = new UsuarioDTO();
+        dto.setUserId(u.getId());
+        dto.setEmail(u.getEmail());
+        dto.setNombre(u.getNombre());
+        dto.setApellidos(u.getApellidos());
+        dto.setTelefono(u.getTelefono());
+        dto.setRol(u.getRol());
+        dto.setFechaRegistro(u.getFechaRegistro() != null ? u.getFechaRegistro().toString() : null);
+        return dto;
     }
 
 }

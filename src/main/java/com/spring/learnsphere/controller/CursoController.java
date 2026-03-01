@@ -1,6 +1,6 @@
 package com.spring.learnsphere.controller;
 
-import com.spring.learnsphere.model.Curso;
+import com.spring.learnsphere.dto.CursoDTO;
 import com.spring.learnsphere.service.CursoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,28 +15,33 @@ public class CursoController {
     private final CursoService cursoService;
 
     @GetMapping("/listar")
-    public List<Curso> listarCursos() {
-        return cursoService.findAllCursos();
+    public List<CursoDTO> listar() {
+        return cursoService.getAll();
     }
 
     @GetMapping("/buscar/{id}")
-    public Curso buscarCursoPorId(@PathVariable Integer id) {
-        return cursoService.findCursoById(id);
+    public CursoDTO buscarPorId(@PathVariable Integer id) {
+        return cursoService.findById(id);
+    }
+
+    @GetMapping("/alumno/{alumnoId}")
+    public CursoDTO getByAlumno(@PathVariable Integer alumnoId) {
+        return cursoService.getByAlumno(alumnoId);
     }
 
     @PostMapping("/crear")
-    public Curso crearCurso(@RequestBody Curso curso) {
-        return cursoService.createCurso(curso);
+    public CursoDTO crear(@RequestBody CursoDTO dto) {
+        return cursoService.create(dto);
     }
 
     @PutMapping("/editar/{id}")
-    public Curso editarCurso(@PathVariable Integer id, @RequestBody Curso curso) {
-        return cursoService.updateCurso(id, curso);
+    public CursoDTO editar(@PathVariable Integer id, @RequestBody CursoDTO dto) {
+        return cursoService.update(id, dto);
     }
 
     @DeleteMapping("/eliminar/{id}")
-    public void eliminarCurso(@PathVariable Integer id) {
-        cursoService.deleteCurso(id);
+    public void eliminar(@PathVariable Integer id) {
+        cursoService.delete(id);
     }
 
 }

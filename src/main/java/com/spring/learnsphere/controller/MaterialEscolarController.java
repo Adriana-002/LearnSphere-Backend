@@ -1,6 +1,6 @@
 package com.spring.learnsphere.controller;
 
-import com.spring.learnsphere.model.MaterialEscolar;
+import com.spring.learnsphere.dto.MaterialEscolarDTO;
 import com.spring.learnsphere.service.MaterialEscolarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -9,34 +9,30 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/materiales-escolares")
+@RequestMapping("/api/material")
 public class MaterialEscolarController {
 
-    private final MaterialEscolarService materialEscolarService;
+    private final MaterialEscolarService materialService;
 
     @GetMapping("/listar")
-    public List<MaterialEscolar> listarMaterialesEscolares() {
-        return materialEscolarService.findAllMaterialesEscolares();
+    public List<MaterialEscolarDTO> getAll() {
+        return materialService.getAll();
     }
 
-    @GetMapping("/buscar/{id}")
-    public MaterialEscolar buscarMaterialEscolarPorId(@PathVariable Integer id) {
-        return materialEscolarService.findMaterialEscolarById(id);
+    @GetMapping("/curso/{cursoId}")
+    public List<MaterialEscolarDTO> getByCurso(@PathVariable Integer cursoId) {
+        return materialService.getByCurso(cursoId);
+    }
+
+    @GetMapping("/profesor/{profesorId}")
+    public List<MaterialEscolarDTO> getByProfesor(@PathVariable Integer profesorId) {
+        return materialService.getByProfesor(profesorId);
     }
 
     @PostMapping("/crear")
-    public MaterialEscolar crearMaterialEscolar(@RequestBody MaterialEscolar materialEscolar) {
-        return materialEscolarService.createMaterialEscolar(materialEscolar);
+    public MaterialEscolarDTO createMaterial(@RequestBody MaterialEscolarDTO dto) {
+        return materialService.createMaterial(dto);
     }
 
-    @PutMapping("/editar/{id}")
-    public MaterialEscolar editarMaterialEscolar(@PathVariable Integer id, @RequestBody MaterialEscolar materialEscolar) {
-        return materialEscolarService.updateMaterialEscolar(id, materialEscolar);
-    }
-
-    @DeleteMapping("/eliminar/{id}")
-    public void eliminarMaterialEscolar(@PathVariable Integer id) {
-        materialEscolarService.deleteMaterialEscolar(id);
-    }
 
 }

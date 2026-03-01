@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class TutorAlumnoDTO {
-    private Long tutorId;
-    private Long alumnoId;
+    private Integer tutorId;
+    private Integer alumnoId;
     private String parentesco;
 }

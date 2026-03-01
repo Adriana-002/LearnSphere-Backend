@@ -1,21 +1,20 @@
 package com.spring.learnsphere.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 public class UsuarioDTO {
-    private Long userId;
+    @JsonProperty("user_id")
+    private Integer userId;
     private String email;
-    private String passwordHash;
     private String nombre;
     private String apellidos;
     private String telefono;
     private String rol;
-    private LocalDateTime fechaRegistro;
+    private String fechaRegistro;
 }

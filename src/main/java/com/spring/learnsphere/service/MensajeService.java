@@ -1,48 +1,58 @@
 package com.spring.learnsphere.service;
 
+import com.spring.learnsphere.dto.MensajeDTO;
+import com.spring.learnsphere.model.Chat;
 import com.spring.learnsphere.model.Mensaje;
+import com.spring.learnsphere.model.Usuario;
+import com.spring.learnsphere.repository.ChatRepository;
 import com.spring.learnsphere.repository.MensajeRepository;
+import com.spring.learnsphere.repository.UsuarioRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 public class MensajeService {
 
     private final MensajeRepository mensajeRepository;
+    private final ChatRepository chatRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public List<Mensaje> findAllMensajes() {
-        return mensajeRepository.findAll();
+    public List<MensajeDTO> getByChatId(Integer chatId) {
+        return mensajeRepository.findByChat_Id(chatId)
+                .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
-    public Mensaje findMensajeById(Integer id) {
-        return mensajeRepository.findById(id).orElseThrow(() -> new RuntimeException("Mensaje no encontrado"));
-    }
+    public MensajeDTO createMensaje(MensajeDTO dto) {
+        Chat chat = chatRepository.findById(dto.getChatId())
+                .orElseThrow(() -> new RuntimeException("Chat no encontrado"));
+        Usuario user = usuarioRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-    public Mensaje createMensaje(Mensaje mensaje) {
-        return mensajeRepository.save(mensaje);
-    }
+        Mensaje mensaje = new Mensaje();
+        mensaje.setChat(chat);
+        mensaje.setUser(user);
+        mensaje.setTexto(dto.getTexto());
 
-    public Mensaje updateMensaje(Integer id, Mensaje mensajeDetails) {
-        Mensaje mensaje = findMensajeById(id);
-
-        if (mensaje == null) {
-            throw new IllegalArgumentException("Mensaje no encontrado");
-        }
-        mensaje.setChat(mensajeDetails.getChat());
-        mensaje.setUser(mensajeDetails.getUser());
-        mensaje.setTexto(mensajeDetails.getTexto());
-        mensaje.setFechaEnvio(mensajeDetails.getFechaEnvio());
-        return createMensaje(mensaje);
+        return toDTO(mensajeRepository.save(mensaje));
     }
 
     public void deleteMensaje(Integer id) {
-        if (findMensajeById(id) == null) {
-            throw new IllegalArgumentException("Mensaje no encontrado");
-        }
         mensajeRepository.deleteById(id);
+    }
+
+    private MensajeDTO toDTO(Mensaje m) {
+        MensajeDTO dto = new MensajeDTO();
+        dto.setMensajeId(m.getId());
+        dto.setChatId(m.getChat() != null ? m.getChat().getId() : null);
+        dto.setUserId(m.getUser() != null ? m.getUser().getId() : null);
+        dto.setTexto(m.getTexto());
+        dto.setFechaEnvio(m.getFechaEnvio() != null ? m.getFechaEnvio().toString() : null);
+        dto.setNombreRemitente(m.getUser() != null ? m.getUser().getNombre() : null);
+        return dto;
     }
 
 }
