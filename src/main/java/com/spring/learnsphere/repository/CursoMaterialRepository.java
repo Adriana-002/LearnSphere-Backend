@@ -11,4 +11,5 @@ import java.util.List;
 public interface CursoMaterialRepository extends JpaRepository<CursoMaterial, CursoMaterialId> {
     List<CursoMaterial> findByCursoId(Integer cursoId);
     List<CursoMaterial> findByCursoIdIn(List<Integer> cursoIds);
+    List<CursoMaterial> findByMaterialId(Integer materialId);
 }
