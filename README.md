@@ -151,3 +151,7 @@ Repository (Datos)   ←── HTTP ──→ Repository (JPA)
     ↕                                 ↕
 ApiService (Retrofit)             PostgreSQL
 ```
+
+## 👷 Developers
+
+[@Adriana-002](https://github.com/Adriana-002)
