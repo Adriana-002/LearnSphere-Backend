@@ -20,21 +20,49 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio que gestiona la lógica de negocio relacionada con las faltas de asistencia en el sistema LearnSphere.
+ *
+ * Proporciona operaciones para la creación, consulta y eliminación de faltas,
+ * incluyendo la generación de notificaciones automáticas para los tutores legales.
+ *
+ * @author Adriana
+ */
 @Service
 @AllArgsConstructor
 @Slf4j
 public class FaltaService {
 
+    /** Repositorio para acceder a los datos de faltas. */
     private final FaltaRepository faltaRepository;
+
+    /** Repositorio para acceder a los datos de alumnos. */
     private final AlumnoRepository alumnoRepository;
+
+    /** Repositorio para acceder a los datos de notificaciones. */
     private final NotificacionRepository notificacionRepository;
+
+    /** Repositorio para acceder a las relaciones tutor-alumno. */
     private final TutorAlumnoRepository tutorAlumnoRepository;
 
+    /**
+     * Obtiene la lista de faltas de un alumno.
+     *
+     * @param alumnoId identificador del alumno
+     * @return lista de DTOs con la información de las faltas del alumno
+     */
     public List<FaltaDTO> getByAlumno(Integer alumnoId) {
         return faltaRepository.findByAlumnoId(alumnoId)
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    /**
+     * Crea una nueva falta de asistencia y genera una notificación para el tutor legal del alumno.
+     *
+     * @param dto datos de la falta a crear
+     * @return DTO con la información de la falta creada
+     * @throws RuntimeException si el alumno no existe
+     */
     @Transactional
     public FaltaDTO createFalta(FaltaDTO dto) {
         log.info("Creando falta para alumno ID: {}", dto.getAlumnoId());
@@ -50,7 +78,6 @@ public class FaltaService {
         Falta saved = faltaRepository.save(falta);
         log.info("Falta guardada con ID: {}", saved.getId());
 
-        // Crear notificación para el tutor legal del alumno
         TutorAlumno tutorAlumno = tutorAlumnoRepository.findAllByAlumnoId(alumno.getId());
         if (tutorAlumno != null) {
             log.info("Tutor encontrado para alumno {}: Tutor ID {}", alumno.getId(), tutorAlumno.getTutor().getId());
@@ -73,12 +100,21 @@ public class FaltaService {
         return toDTO(saved);
     }
 
-    // ...existing code...
-
+    /**
+     * Elimina una falta de asistencia del sistema.
+     *
+     * @param id identificador de la falta a eliminar
+     */
     public void deleteFalta(Integer id) {
         faltaRepository.deleteById(id);
     }
 
+    /**
+     * Convierte una entidad Falta a su correspondiente DTO.
+     *
+     * @param f entidad Falta a convertir
+     * @return DTO con la información de la falta
+     */
     private FaltaDTO toDTO(Falta f) {
         FaltaDTO dto = new FaltaDTO();
         dto.setFaltaId(f.getId());

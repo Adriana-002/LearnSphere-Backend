@@ -18,29 +18,74 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio que gestiona la lógica de negocio relacionada con las notas en el sistema LearnSphere.
+ *
+ * Proporciona operaciones para la creación, actualización y consulta de calificaciones,
+ * incluyendo la generación de notificaciones automáticas para los tutores legales
+ * cuando se registran o modifican notas.
+ *
+ * @author Adriana
+ */
 @Service
 @AllArgsConstructor
 @Slf4j
 public class NotaService {
 
+    /** Repositorio para acceder a los datos de notas. */
     private final NotaRepository notaRepository;
+
+    /** Repositorio para acceder a los datos de alumnos. */
     private final AlumnoRepository alumnoRepository;
+
+    /** Repositorio para acceder a las relaciones curso-asignatura. */
     private final CursoAsignaturaRepository cursoAsignaturaRepository;
+
+    /** Repositorio para acceder a las relaciones alumno-curso. */
     private final AlumnoCursoRepository alumnoCursoRepository;
+
+    /** Repositorio para acceder a los datos de asignaturas. */
     private final AsignaturaRepository asignaturaRepository;
+
+    /** Repositorio para acceder a los datos de notificaciones. */
     private final NotificacionRepository notificacionRepository;
+
+    /** Repositorio para acceder a las relaciones tutor-alumno. */
     private final TutorAlumnoRepository tutorAlumnoRepository;
 
+    /**
+     * Obtiene las notas de un alumno filtradas por trimestre.
+     *
+     * @param alumnoId   identificador del alumno
+     * @param trimestre  número del trimestre
+     * @return lista de DTOs con las notas del alumno en el trimestre indicado
+     */
     public List<NotaDTO> getByAlumnoYTrimestre(Integer alumnoId, Integer trimestre) {
         return notaRepository.findByAlumno_IdAndTrimestre(alumnoId, trimestre)
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    /**
+     * Obtiene todas las notas de un alumno.
+     *
+     * @param alumnoId identificador del alumno
+     * @return lista de DTOs con todas las notas del alumno
+     */
     public List<NotaDTO> getByAlumno(Integer alumnoId) {
         return notaRepository.findByAlumno_Id(alumnoId)
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    /**
+     * Crea una nueva nota para un alumno y genera una notificación para su tutor legal.
+     *
+     * Permite identificar la asignatura mediante el ID de curso-asignatura
+     * o por el nombre de la asignatura.
+     *
+     * @param dto datos de la nota a crear
+     * @return DTO con la información de la nota creada
+     * @throws RuntimeException si el alumno, la asignatura o el curso-asignatura no existen
+     */
     @Transactional
     public NotaDTO createNota(NotaDTO dto) {
         log.info("Creando nota para alumno ID: {}", dto.getAlumnoId());
@@ -81,7 +126,6 @@ public class NotaService {
         Nota saved = notaRepository.save(nota);
         log.info("Nota guardada con ID: {}", saved.getId());
 
-        // Crear notificación para el tutor legal del alumno
         TutorAlumno tutorAlumno = tutorAlumnoRepository.findAllByAlumnoId(alumno.getId());
         if (tutorAlumno != null) {
             log.info("Tutor encontrado para alumno {}: Tutor ID {}", alumno.getId(), tutorAlumno.getTutor().getId());
@@ -106,6 +150,14 @@ public class NotaService {
         return toDTO(saved);
     }
 
+    /**
+     * Actualiza la calificación de una nota existente y genera una notificación para el tutor legal.
+     *
+     * @param id  identificador de la nota a actualizar
+     * @param dto datos actualizados de la nota
+     * @return DTO con la información de la nota actualizada
+     * @throws RuntimeException si la nota no existe
+     */
     public NotaDTO updateNota(Integer id, NotaDTO dto) {
         Nota nota = notaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Nota no encontrada"));
@@ -130,6 +182,12 @@ public class NotaService {
     }
 
 
+    /**
+     * Convierte una entidad Nota a su correspondiente DTO.
+     *
+     * @param n entidad Nota a convertir
+     * @return DTO con la información de la nota
+     */
     private NotaDTO toDTO(Nota n) {
         NotaDTO dto = new NotaDTO();
         dto.setNotaId(n.getId());

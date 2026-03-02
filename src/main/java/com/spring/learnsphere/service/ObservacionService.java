@@ -20,23 +20,55 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio que gestiona la lógica de negocio relacionada con las observaciones en el sistema LearnSphere.
+ *
+ * Proporciona operaciones para la creación, consulta y eliminación de observaciones sobre alumnos,
+ * incluyendo la generación de notificaciones automáticas para los tutores legales.
+ *
+ * @author Adriana
+ */
 @Service
 @AllArgsConstructor
 @Slf4j
 public class ObservacionService {
 
+    /** Repositorio para acceder a los datos de observaciones. */
     private final ObservacionRepository observacionRepository;
+
+    /** Repositorio para acceder a los datos de alumnos. */
     private final AlumnoRepository alumnoRepository;
+
+    /** Repositorio para acceder a los datos de asignaturas. */
     private final AsignaturaRepository asignaturaRepository;
+
+    /** Repositorio para acceder a los datos de profesores. */
     private final ProfesorRepository profesorRepository;
+
+    /** Repositorio para acceder a los datos de notificaciones. */
     private final NotificacionRepository notificacionRepository;
+
+    /** Repositorio para acceder a las relaciones tutor-alumno. */
     private final TutorAlumnoRepository tutorAlumnoRepository;
 
+    /**
+     * Obtiene la lista de observaciones de un alumno.
+     *
+     * @param alumnoId identificador del alumno
+     * @return lista de DTOs con la información de las observaciones del alumno
+     */
     public List<ObservacionDTO> getByAlumno(Integer alumnoId) {
         return observacionRepository.findByAlumnoId(alumnoId)
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    /**
+     * Crea una nueva observación sobre un alumno y genera una notificación para su tutor legal.
+     *
+     * @param dto datos de la observación a crear
+     * @return DTO con la información de la observación creada
+     * @throws RuntimeException si el alumno no existe
+     */
     @Transactional
     public ObservacionDTO createObservacion(ObservacionDTO dto) {
         log.info("Creando observación para alumno ID: {}", dto.getAlumnoId());
@@ -83,10 +115,21 @@ public class ObservacionService {
         return toDTO(saved);
     }
 
+    /**
+     * Elimina una observación del sistema.
+     *
+     * @param id identificador de la observación a eliminar
+     */
     public void deleteObservacion(Integer id) {
         observacionRepository.deleteById(id);
     }
 
+    /**
+     * Convierte una entidad Observacion a su correspondiente DTO.
+     *
+     * @param o entidad Observacion a convertir
+     * @return DTO con la información de la observación
+     */
     private ObservacionDTO toDTO(Observacion o) {
         ObservacionDTO dto = new ObservacionDTO();
         dto.setObservacionId(o.getId());

@@ -14,21 +14,49 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio que gestiona la lógica de negocio relacionada con los chats en el sistema LearnSphere.
+ *
+ * Proporciona operaciones para la creación y consulta de chats entre usuarios,
+ * incluyendo la gestión de participantes y el envío de notificaciones a tutores legales.
+ *
+ * @author Adriana
+ */
 @Service
 @AllArgsConstructor
 @Slf4j
 public class ChatService {
 
+    /** Repositorio para acceder a los datos de chats. */
     private final ChatRepository chatRepository;
+
+    /** Repositorio para acceder a las relaciones usuario-chat. */
     private final UsuarioChatRepository usuarioChatRepository;
+
+    /** Repositorio para acceder a los datos de mensajes. */
     private final MensajeRepository mensajeRepository;
+
+    /** Repositorio para acceder a los datos de alumnos. */
     private final AlumnoRepository alumnoRepository;
+
+    /** Repositorio para acceder a las relaciones tutor-alumno. */
     private final TutorAlumnoRepository tutorAlumnoRepository;
+
+    /** Repositorio para acceder a los datos de usuarios. */
     private final UsuarioRepository usuarioRepository;
+
+    /** Repositorio para acceder a las relaciones profesor-asignatura. */
     private final ProfesorAsignaturaRepository profesorAsignaturaRepository;
+
+    /** Repositorio para acceder a los datos de notificaciones. */
     private final NotificacionRepository notificacionRepository;
 
-
+    /**
+     * Obtiene la lista de chats en los que participa un usuario.
+     *
+     * @param userId identificador del usuario
+     * @return lista de DTOs con la información de los chats del usuario
+     */
     public List<ChatDTO> getByUsuario(Integer userId) {
         List<Integer> chatIds = usuarioChatRepository.findByUserId(userId)
                 .stream().map(uc -> uc.getId().getChatId()).collect(Collectors.toList());
@@ -42,6 +70,16 @@ public class ChatService {
         return chats.stream().map(chat -> toDTO(chat, userId)).collect(Collectors.toList());
     }
 
+    /**
+     * Crea un nuevo chat y añade a los participantes correspondientes.
+     *
+     * Busca el tutor legal de cada alumno seleccionado y lo añade como participante del chat.
+     * Además, genera notificaciones para cada tutor añadido.
+     *
+     * @param dto datos del chat a crear, incluyendo el creador y los IDs de los alumnos
+     * @return DTO con la información del chat creado
+     * @throws RuntimeException si el usuario creador o algún alumno no existe
+     */
     @Transactional
     public ChatDTO createChat(ChatDTO dto) {
         log.info("Creando chat de tipo: {}", dto.getTipo());
@@ -52,7 +90,6 @@ public class ChatService {
         log.info("Chat guardado con ID: {}", saved.getId());
 
         Usuario creador = null;
-        // Añadir al creador del chat como participante
         if (dto.getCreadorId() != null) {
             creador = usuarioRepository.findById(dto.getCreadorId())
                     .orElseThrow(() -> new RuntimeException("Usuario creador no encontrado: " + dto.getCreadorId()));
@@ -68,7 +105,6 @@ public class ChatService {
             usuarioChatRepository.save(ucCreador);
         }
 
-        // Por cada alumno seleccionado, buscar su tutor legal y añadirlo al chat
         int notificacionesCreadas = 0;
         if (dto.getUserIds() != null && !dto.getUserIds().isEmpty()) {
             log.info("Añadiendo {} alumnos al chat", dto.getUserIds().size());
@@ -95,7 +131,6 @@ public class ChatService {
                 uc.setUser(tutorUsuario);
                 usuarioChatRepository.save(uc);
 
-                // Crear notificación para el tutor
                 if (creador != null) {
                     Notificacion notificacion = new Notificacion();
                     notificacion.setUser(tutorUsuario);
@@ -123,6 +158,16 @@ public class ChatService {
         return result;
     }
 
+    /**
+     * Convierte una entidad Chat a su correspondiente DTO.
+     *
+     * Incluye información del último mensaje, nombre del chat y nombre de la asignatura
+     * en caso de chats individuales.
+     *
+     * @param chat   entidad Chat a convertir
+     * @param userId identificador del usuario actual para determinar el otro participante
+     * @return DTO con la información del chat
+     */
     private ChatDTO toDTO(Chat chat, Integer userId) {
         ChatDTO dto = new ChatDTO();
         dto.setChatId(chat.getId());
@@ -141,7 +186,6 @@ public class ChatService {
                     .ifPresent(uc -> {
                         dto.setNombreChat(uc.getUser().getNombre() + " " + uc.getUser().getApellidos());
 
-                        // Buscar si este usuario es tutor legal y obtener el nombre del alumno
                         List<TutorAlumno> tutorAlumnos = tutorAlumnoRepository.findAllByTutor_Id(uc.getUser().getId());
                         if (!tutorAlumnos.isEmpty()) {
                             Alumno alumno = tutorAlumnos.get(0).getAlumno();
@@ -149,7 +193,6 @@ public class ChatService {
                         }
                     });
 
-            // Buscar entre los participantes del chat cuál es profesor y obtener su asignatura
             List<UsuarioChat> participantes = usuarioChatRepository.findByChatId(chat.getId());
             for (UsuarioChat participante : participantes) {
                 List<ProfesorAsignatura> profAsignaturas = profesorAsignaturaRepository.findByProfesor_Id(participante.getUser().getId());
@@ -165,6 +208,12 @@ public class ChatService {
     }
 
 
+    /**
+     * Calcula el tiempo transcurrido desde una fecha dada en formato legible.
+     *
+     * @param fecha fecha de referencia para el cálculo
+     * @return cadena con el tiempo transcurrido (minutos, horas o días)
+     */
     private String calcularTiempo(LocalDateTime fecha) {
         long minutos = ChronoUnit.MINUTES.between(fecha, LocalDateTime.now());
         if (minutos < 60) return minutos + "min";
