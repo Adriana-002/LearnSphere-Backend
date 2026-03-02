@@ -1,11 +1,12 @@
 package com.spring.learnsphere.service;
 
 import com.spring.learnsphere.dto.AlumnoDTO;
-import com.spring.learnsphere.model.*;
+import com.spring.learnsphere.model.Alumno;
 import com.spring.learnsphere.repository.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -117,6 +118,7 @@ public class AlumnoService {
         Alumno alumno = new Alumno();
         alumno.setNombre(dto.getNombre());
         alumno.setApellidos(dto.getApellidos());
+        alumno.setFechaNacimiento(LocalDate.parse(dto.getFechaNacimiento()));
         return toDTO(alumnoRepository.save(alumno));
     }
 
