@@ -19,6 +19,11 @@ public class NotificacionController {
         return notificacionService.getByUsuario(userId);
     }
 
+    @GetMapping("/usuario/{userId}/importantes")
+    public List<NotificacionDTO> getImportantesByUsuario(@PathVariable Integer userId) {
+        return notificacionService.getImportantesByUsuario(userId);
+    }
+
     @PutMapping("/leer/{id}")
     public void marcarLeida(@PathVariable Integer id) {
         notificacionService.marcarLeida(id);
