@@ -34,5 +34,15 @@ public class MaterialEscolarController {
         return materialService.createMaterial(dto);
     }
 
+    @PutMapping("/editar/{materialId}")
+    public MaterialEscolarDTO updateMaterial(@PathVariable Integer materialId, @RequestBody MaterialEscolarDTO dto) {
+        return materialService.updateMaterial(materialId, dto);
+    }
+
+    @DeleteMapping("/eliminar/{materialId}")
+    public void deleteMaterial(@PathVariable Integer materialId) {
+        materialService.deleteMaterial(materialId);
+    }
+
 
 }

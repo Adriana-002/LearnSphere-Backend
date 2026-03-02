@@ -110,8 +110,25 @@ public class NotaService {
         Nota nota = notaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Nota no encontrada"));
         nota.setCalificacion(dto.getCalificacion() != null ? BigDecimal.valueOf(dto.getCalificacion()) : null);
-        return toDTO(notaRepository.save(nota));
+
+        Nota saved = notaRepository.save(nota);
+
+        TutorAlumno tutorAlumno = tutorAlumnoRepository.findAllByAlumnoId(nota.getAlumno().getId());
+        if (tutorAlumno != null) {
+            Notificacion notificacion = new Notificacion();
+            notificacion.setUser(tutorAlumno.getTutor().getUsuarios());
+            notificacion.setTipo(TipoNotificacion.nueva_nota);
+            notificacion.setMensaje("La nota de " + nota.getAlumno().getNombre() + " ha sido actualizada.");
+            notificacion.setEntidadId(nota.getAlumno().getId());
+            notificacion.setEntidadTipo("nota");
+            notificacion.setLeida(false);
+            notificacion.setFecha(java.time.Instant.now());
+            notificacionRepository.save(notificacion);
+        }
+
+        return toDTO(saved);
     }
+
 
     private NotaDTO toDTO(Nota n) {
         NotaDTO dto = new NotaDTO();

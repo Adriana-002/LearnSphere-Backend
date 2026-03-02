@@ -83,7 +83,6 @@ public class MaterialEscolarService {
             cursoMaterialRepository.save(cm);
             log.info("Relación curso-material guardada");
 
-            // Crear notificaciones para los tutores de los alumnos del curso
             List<AlumnoCurso> alumnosCurso = alumnoCursoRepository.findByCursoId(curso.getId());
             log.info("Encontrados {} alumnos en el curso {}", alumnosCurso.size(), curso.getNombre());
 
@@ -123,6 +122,135 @@ public class MaterialEscolarService {
         MaterialEscolarDTO result = toDTO(saved);
         result.setCursoId(dto.getCursoId());
         return result;
+    }
+
+    @Transactional
+    public MaterialEscolarDTO updateMaterial(Integer materialId, MaterialEscolarDTO dto) {
+        log.info("Actualizando material escolar con ID: {}", materialId);
+
+        MaterialEscolar material = materialRepository.findById(materialId)
+                .orElseThrow(() -> new RuntimeException("Material escolar no encontrado con ID: " + materialId));
+
+        if (dto.getNombre() != null && !dto.getNombre().isEmpty()) {
+            material.setNombre(dto.getNombre());
+        }
+        if (dto.getEditorial() != null && !dto.getEditorial().isEmpty()) {
+            material.setEditorial(dto.getEditorial());
+        }
+        if (dto.getIsbn() != null && !dto.getIsbn().isEmpty()) {
+            material.setIsbn(dto.getIsbn());
+        }
+
+        MaterialEscolar updated = materialRepository.save(material);
+        log.info("Material escolar actualizado con ID: {}", updated.getId());
+
+        // Si se proporciona un cursoId, asegurar que exista la relación curso-material
+        if (dto.getCursoId() != null) {
+            Curso curso = cursoRepository.findById(dto.getCursoId())
+                    .orElseThrow(() -> new RuntimeException("Curso no encontrado con ID: " + dto.getCursoId()));
+
+            CursoMaterialId cmId = new CursoMaterialId();
+            cmId.setCursoId(curso.getId());
+            cmId.setMaterialId(updated.getId());
+
+            boolean existeRelacion = cursoMaterialRepository.existsById(cmId);
+            if (!existeRelacion) {
+                CursoMaterial cm = new CursoMaterial();
+                cm.setId(cmId);
+                cm.setCurso(curso);
+                cm.setMaterial(updated);
+                cursoMaterialRepository.save(cm);
+                log.info("Nueva relación curso-material creada para cursoId: {}", curso.getId());
+            }
+        }
+
+        // Crear notificaciones para TODOS los cursos asociados al material
+        crearNotificacionesMaterial(updated, "actualizado");
+
+        MaterialEscolarDTO result = toDTO(updated);
+        result.setCursoId(dto.getCursoId());
+        return result;
+    }
+
+    @Transactional
+    public void deleteMaterial(Integer materialId) {
+        log.info("Eliminando material escolar con ID: {}", materialId);
+
+        MaterialEscolar material = materialRepository.findById(materialId)
+                .orElseThrow(() -> new RuntimeException("Material escolar no encontrado con ID: " + materialId));
+
+        List<CursoMaterial> cursoMateriales = cursoMaterialRepository.findByMaterialId(materialId);
+
+        for (CursoMaterial cm : cursoMateriales) {
+            crearNotificacionesMaterialPorCurso(cm.getCurso(), material, "eliminado");
+        }
+
+        for (CursoMaterial cm : cursoMateriales) {
+            cursoMaterialRepository.delete(cm);
+            log.info("Relación curso-material eliminada para cursoId: {}", cm.getCurso().getId());
+        }
+
+        materialRepository.delete(material);
+        log.info("Material escolar eliminado con ID: {}", materialId);
+    }
+
+    /**
+     * Crea notificaciones para todos los tutores de alumnos de los cursos asociados al material
+     */
+    private void crearNotificacionesMaterial(MaterialEscolar material, String accion) {
+        List<CursoMaterial> cursoMateriales = cursoMaterialRepository.findByMaterialId(material.getId());
+        log.info("Encontradas {} relaciones curso-material para materialId: {}", cursoMateriales.size(), material.getId());
+
+        for (CursoMaterial cm : cursoMateriales) {
+            crearNotificacionesMaterialPorCurso(cm.getCurso(), material, accion);
+        }
+    }
+
+    /**
+     * Crea notificaciones para los tutores de los alumnos de un curso específico
+     */
+    private void crearNotificacionesMaterialPorCurso(Curso curso, MaterialEscolar material, String accion) {
+        log.info("Creando notificaciones para material {} ({})", material.getId(), accion);
+
+        List<AlumnoCurso> alumnosCurso = alumnoCursoRepository.findByCursoId(curso.getId());
+        log.info("Encontrados {} alumnos en el curso {}", alumnosCurso.size(), curso.getNombre());
+
+        int notificacionesCreadas = 0;
+        for (AlumnoCurso alumnoCurso : alumnosCurso) {
+            log.debug("Procesando alumno ID: {} - {}", alumnoCurso.getAlumno().getId(), alumnoCurso.getAlumno().getNombre());
+
+            TutorAlumno tutorAlumno = tutorAlumnoRepository.findAllByAlumnoId(alumnoCurso.getAlumno().getId());
+            if (tutorAlumno != null) {
+                log.info("Tutor encontrado para alumno {}: Tutor ID {}",
+                        alumnoCurso.getAlumno().getNombre(), tutorAlumno.getTutor().getId());
+
+                Notificacion notificacion = new Notificacion();
+                notificacion.setUser(tutorAlumno.getTutor().getUsuarios());
+                notificacion.setTipo(TipoNotificacion.recordatorio_material);
+
+                String mensajeAccion = "";
+                if ("actualizado".equals(accion)) {
+                    mensajeAccion = "El material escolar \"" + material.getNombre() + "\" del curso " + curso.getNombre() + " ha sido actualizado.";
+                } else if ("eliminado".equals(accion)) {
+                    mensajeAccion = "El material escolar \"" + material.getNombre() + "\" del curso " + curso.getNombre() + " ha sido eliminado.";
+                }
+
+                notificacion.setMensaje(mensajeAccion);
+                notificacion.setEntidadId(material.getId());
+                notificacion.setEntidadTipo("material");
+                notificacion.setLeida(false);
+                notificacion.setFecha(java.time.Instant.now());
+
+                Notificacion notifSaved = notificacionRepository.save(notificacion);
+                notificacionesCreadas++;
+                log.info("Notificación creada con ID: {} para usuario ID: {} (tutor de {})",
+                         notifSaved.getId(), notifSaved.getUser().getId(), alumnoCurso.getAlumno().getNombre());
+            } else {
+                log.warn("No se encontró tutor legal para el alumno ID: {} - {}",
+                        alumnoCurso.getAlumno().getId(), alumnoCurso.getAlumno().getNombre());
+            }
+        }
+        log.info("Se crearon {} notificaciones para el material {} ({})", notificacionesCreadas, material.getNombre(), accion);
     }
 
     private MaterialEscolarDTO toDTO(MaterialEscolar m) {
