@@ -1,19 +1,20 @@
 package com.spring.learnsphere.service;
 
 import com.spring.learnsphere.dto.MaterialEscolarDTO;
-import com.spring.learnsphere.model.Curso;
-import com.spring.learnsphere.model.CursoMaterial;
-import com.spring.learnsphere.model.CursoMaterialId;
-import com.spring.learnsphere.model.MaterialEscolar;
+import com.spring.learnsphere.enums.TipoNotificacion;
+import com.spring.learnsphere.model.*;
 import com.spring.learnsphere.repository.*;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class MaterialEscolarService {
 
     private final MaterialEscolarRepository materialRepository;
@@ -21,6 +22,9 @@ public class MaterialEscolarService {
     private final CursoRepository cursoRepository;
     private final ProfesorAsignaturaRepository profesorAsignaturaRepository;
     private final CursoAsignaturaRepository cursoAsignaturaRepository;
+    private final NotificacionRepository notificacionRepository;
+    private final AlumnoCursoRepository alumnoCursoRepository;
+    private final TutorAlumnoRepository tutorAlumnoRepository;
 
     public List<MaterialEscolarDTO> getAll() {
         return materialRepository.findAll().stream()
@@ -51,14 +55,20 @@ public class MaterialEscolarService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public MaterialEscolarDTO createMaterial(MaterialEscolarDTO dto) {
+        log.info("Creando material escolar: {} con cursoId: {}", dto.getNombre(), dto.getCursoId());
+
         MaterialEscolar m = new MaterialEscolar();
         m.setNombre(dto.getNombre());
         m.setEditorial(dto.getEditorial());
         m.setIsbn(dto.getIsbn());
         MaterialEscolar saved = materialRepository.save(m);
+        log.info("Material guardado con ID: {}", saved.getId());
 
         if (dto.getCursoId() != null) {
+            log.info("Procesando curso ID: {}", dto.getCursoId());
+
             Curso curso = cursoRepository.findById(dto.getCursoId())
                     .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
 
@@ -71,6 +81,43 @@ public class MaterialEscolarService {
             cm.setCurso(curso);
             cm.setMaterial(saved);
             cursoMaterialRepository.save(cm);
+            log.info("Relación curso-material guardada");
+
+            // Crear notificaciones para los tutores de los alumnos del curso
+            List<AlumnoCurso> alumnosCurso = alumnoCursoRepository.findByCursoId(curso.getId());
+            log.info("Encontrados {} alumnos en el curso {}", alumnosCurso.size(), curso.getNombre());
+
+            int notificacionesCreadas = 0;
+            for (AlumnoCurso alumnoCurso : alumnosCurso) {
+                log.debug("Procesando alumno ID: {} - {}", alumnoCurso.getAlumno().getId(), alumnoCurso.getAlumno().getNombre());
+
+                TutorAlumno tutorAlumno = tutorAlumnoRepository.findAllByAlumnoId(alumnoCurso.getAlumno().getId());
+                if (tutorAlumno != null) {
+                    log.info("Tutor encontrado para alumno {}: Tutor ID {}",
+                            alumnoCurso.getAlumno().getNombre(), tutorAlumno.getTutor().getId());
+
+                    Notificacion notificacion = new Notificacion();
+                    notificacion.setUser(tutorAlumno.getTutor().getUsuarios());
+                    notificacion.setTipo(TipoNotificacion.recordatorio_material);
+                    notificacion.setMensaje("Nuevo material escolar para el curso " + curso.getNombre() +
+                                           ": " + saved.getNombre());
+                    notificacion.setEntidadId(saved.getId());
+                    notificacion.setEntidadTipo("material");
+                    notificacion.setLeida(false);
+                    notificacion.setFecha(java.time.Instant.now());
+
+                    Notificacion notifSaved = notificacionRepository.save(notificacion);
+                    notificacionesCreadas++;
+                    log.info("Notificación creada con ID: {} para usuario ID: {} (tutor de {})",
+                             notifSaved.getId(), notifSaved.getUser().getId(), alumnoCurso.getAlumno().getNombre());
+                } else {
+                    log.warn("No se encontró tutor legal para el alumno ID: {} - {}",
+                            alumnoCurso.getAlumno().getId(), alumnoCurso.getAlumno().getNombre());
+                }
+            }
+            log.info("Se crearon {} notificaciones para el material {}", notificacionesCreadas, saved.getNombre());
+        } else {
+            log.warn("No se proporcionó cursoId, no se crearán notificaciones para el material {}", saved.getNombre());
         }
 
         MaterialEscolarDTO result = toDTO(saved);

@@ -44,6 +44,8 @@ public class NotificacionService {
         dto.setUserId(n.getUser().getId());
         dto.setTipo(n.getTipo().name());
         dto.setMensaje(n.getMensaje());
+        dto.setEntidadId(n.getEntidadId());
+        dto.setEntidadTipo(n.getEntidadTipo());
         dto.setLeida(n.getLeida());
         dto.setFecha(n.getFecha() != null ? n.getFecha().toString() : null);
         return dto;
