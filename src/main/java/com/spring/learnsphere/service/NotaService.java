@@ -1,13 +1,18 @@
 package com.spring.learnsphere.service;
 
 import com.spring.learnsphere.dto.NotaDTO;
+import com.spring.learnsphere.enums.TipoNotificacion;
 import com.spring.learnsphere.model.Alumno;
 import com.spring.learnsphere.model.Asignatura;
 import com.spring.learnsphere.model.CursoAsignatura;
 import com.spring.learnsphere.model.Nota;
+import com.spring.learnsphere.model.Notificacion;
+import com.spring.learnsphere.model.TutorAlumno;
 import com.spring.learnsphere.repository.*;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,6 +20,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class NotaService {
 
     private final NotaRepository notaRepository;
@@ -22,6 +28,8 @@ public class NotaService {
     private final CursoAsignaturaRepository cursoAsignaturaRepository;
     private final AlumnoCursoRepository alumnoCursoRepository;
     private final AsignaturaRepository asignaturaRepository;
+    private final NotificacionRepository notificacionRepository;
+    private final TutorAlumnoRepository tutorAlumnoRepository;
 
     public List<NotaDTO> getByAlumnoYTrimestre(Integer alumnoId, Integer trimestre) {
         return notaRepository.findByAlumno_IdAndTrimestre(alumnoId, trimestre)
@@ -33,7 +41,10 @@ public class NotaService {
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    @Transactional
     public NotaDTO createNota(NotaDTO dto) {
+        log.info("Creando nota para alumno ID: {}", dto.getAlumnoId());
+
         Alumno alumno = alumnoRepository.findById(dto.getAlumnoId())
                 .orElseThrow(() -> new RuntimeException("Alumno no encontrado"));
 
@@ -67,7 +78,32 @@ public class NotaService {
         nota.setCalificacion(dto.getCalificacion() != null ? BigDecimal.valueOf(dto.getCalificacion()) : null);
         nota.setFechaRegistro(java.time.LocalDate.now());
 
-        return toDTO(notaRepository.save(nota));
+        Nota saved = notaRepository.save(nota);
+        log.info("Nota guardada con ID: {}", saved.getId());
+
+        // Crear notificación para el tutor legal del alumno
+        TutorAlumno tutorAlumno = tutorAlumnoRepository.findAllByAlumnoId(alumno.getId());
+        if (tutorAlumno != null) {
+            log.info("Tutor encontrado para alumno {}: Tutor ID {}", alumno.getId(), tutorAlumno.getTutor().getId());
+
+            Notificacion notificacion = new Notificacion();
+            notificacion.setUser(tutorAlumno.getTutor().getUsuarios());
+            notificacion.setTipo(TipoNotificacion.nueva_nota);
+            notificacion.setMensaje("Nueva nota en " + cursoAsignatura.getAsignatura().getNombre() +
+                                   " para " + alumno.getNombre() + " " + alumno.getApellidos() +
+                                   " - Trimestre " + dto.getTrimestre());
+            notificacion.setEntidadId(alumno.getId());
+            notificacion.setEntidadTipo("alumno");
+            notificacion.setLeida(false);
+            notificacion.setFecha(java.time.Instant.now());
+
+            Notificacion notifSaved = notificacionRepository.save(notificacion);
+            log.info("Notificación creada con ID: {} para usuario ID: {}", notifSaved.getId(), notifSaved.getUser().getId());
+        } else {
+            log.warn("No se encontró tutor legal para el alumno ID: {}", alumno.getId());
+        }
+
+        return toDTO(saved);
     }
 
     public NotaDTO updateNota(Integer id, NotaDTO dto) {

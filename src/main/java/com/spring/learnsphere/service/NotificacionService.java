@@ -1,6 +1,7 @@
 package com.spring.learnsphere.service;
 
 import com.spring.learnsphere.dto.NotificacionDTO;
+import com.spring.learnsphere.enums.TipoNotificacion;
 import com.spring.learnsphere.model.Notificacion;
 import com.spring.learnsphere.repository.NotificacionRepository;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,16 @@ public class NotificacionService {
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    public List<NotificacionDTO> getImportantesByUsuario(Integer userId) {
+        List<TipoNotificacion> importantes = List.of(
+                TipoNotificacion.nueva_nota,
+                TipoNotificacion.nueva_falta,
+                TipoNotificacion.nueva_observacion
+        );
+        return notificacionRepository.findByUser_IdAndTipoInOrderByFechaDesc(userId, importantes)
+                .stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
     public void marcarLeida(Integer id) {
         Notificacion n = notificacionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
@@ -33,6 +44,8 @@ public class NotificacionService {
         dto.setUserId(n.getUser().getId());
         dto.setTipo(n.getTipo().name());
         dto.setMensaje(n.getMensaje());
+        dto.setEntidadId(n.getEntidadId());
+        dto.setEntidadTipo(n.getEntidadTipo());
         dto.setLeida(n.getLeida());
         dto.setFecha(n.getFecha() != null ? n.getFecha().toString() : null);
         return dto;
